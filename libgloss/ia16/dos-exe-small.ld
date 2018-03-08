@@ -8,11 +8,8 @@ GROUP(-lc -lgcc -ldos-exe-small -lm)
 
 MEMORY
   {
-    hdrlma  (r)  : ORIGIN = 0x00000, LENGTH = 32
-    hdrvma  (r)  : ORIGIN = 0x00000, LENGTH = 32
-
-    /* Account for the 32-byte header.  */
-    bseglma (wx) : ORIGIN = 0x00020, LENGTH = 0x20000
+    bseglma (wx) : ORIGIN = 0x00000, LENGTH = 0x60020
+    hdrvma  (wx) : ORIGIN = 0x00000, LENGTH = 0x40020
     csegvma (wx) : ORIGIN = 0x00020, LENGTH = 0x10000
     dsegvma (wx) : ORIGIN = 0x00020, LENGTH = 0x10000
   }
@@ -31,9 +28,9 @@ SECTIONS
 		/* Total number of 512-byte pages.  */
 		SHORT ((LOADADDR (.data) + SIZEOF (.data) + 511) / 512)
 		/* Relocation entries.  */
-		SHORT (0)
+		SHORT (__msdos_mz_rels)
 		/* Header size in paragraphs.  */
-		SHORT (2)
+		SHORT (__msdos_mz_hdr_paras)
 		/* Minimum extra paragraphs.  */
 		SHORT ((0x10000 - SIZEOF (.data) - ADDR (.data)) / 16)
 		/* Maximum extra paragraphs.  Instead of setting this to
@@ -43,21 +40,36 @@ SECTIONS
 		   from DOS if it really needs it.  */
 		SHORT ((0x10000 - SIZEOF (.data) - ADDR (.data)) / 16)
 		/* Initial %ss.  */
-		SHORT (LOADADDR (.data) / 16 - ADDR (.data) / 16
-		    + 0x10000 - ORIGIN (bseglma) / 16)
+		SHORT (LOADADDR (.data) / 16 - __msdos_mz_hdr_paras
+		    - ADDR (.data) / 16 + 0x10000)
 		/* Initial %sp.  Let it wrap around from 0.  */
 		SHORT (0)
 		/* Checksum (unused).  */
 		SHORT (0)
 		/* Initial %cs:%ip.  */
 		SHORT (_start)
-		SHORT (LOADADDR (.text) / 16 - ADDR (.text) / 16
-		    + 0x10000 - ORIGIN (bseglma) / 16)
+		SHORT (LOADADDR (.text) / 16 - __msdos_mz_hdr_paras
+		    - ADDR (.text) / 16 + 0x10000)
 		/* Relocation table offset.  */
 		SHORT (0x1c)
 		/* Overlay number.  */
 		SHORT (0)
-    } >hdrvma AT>hdrlma
+
+		/* Relocations.  */
+		HIDDEN (__msdos_mz_rel_start = .);
+		*(.rel.msdos_mz)
+		HIDDEN (__msdos_mz_rel_end = .);
+		HIDDEN (__msdos_mz_rels = (. - __msdos_mz_rel_start) / 4);
+
+		/* Padding.  */
+		HIDDEN (__msdos_mz_hdr_paras = (7 + __msdos_mz_rels + 3) / 4);
+		. = ALIGN (16);
+
+		ASSERT ((__msdos_mz_rel_end - __msdos_mz_rel_start) % 4 == 0,
+		    "Error: MZ relocations are not 4-byte aligned");
+		ASSERT (__msdos_mz_rels <= 0xffff,
+		    "Error: too many MZ relocations");
+	} >hdrvma AT>bseglma
 
     /* Target text sections.  */
     .text : {
