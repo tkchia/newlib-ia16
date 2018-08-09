@@ -7,10 +7,10 @@
 	.section	".text"
 	.global		strcmp
 strcmp:
-	pushw	%si
+	ENTER_BX_
 	movw	%sp,	%bx
-	movw	4(%bx),	%si
-	movw	6(%bx), %bx
+	MOV_ARG0W_BX_(%si)
+	MOV_ARG2W_BX_(%bx)
 	decw	%bx
 .L1:
 	lodsb

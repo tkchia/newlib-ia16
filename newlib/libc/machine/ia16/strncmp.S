@@ -7,11 +7,11 @@
 	.section	".text"
 	.global		strncmp
 strncmp:
+	ENTER_BX_
 	pushw	%si
-	movw	%sp,	%bx
-	movw	4(%bx),	%si
-	movw	8(%bx), %cx
-	movw	6(%bx),	%bx
+	MOV_ARG2W_BX_(%si)
+	MOV_ARG4W_BX_(%cx)
+	MOV_ARG0W_BX_(%bx)
 	jcxz	.L3
 	decw	%bx
 .L1:

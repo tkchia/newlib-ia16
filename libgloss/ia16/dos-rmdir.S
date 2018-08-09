@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		_rmdir
 _rmdir:
-	movw	%sp,	%bx
-	movw	2(%bx),	%dx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%dx)
 	movb	$0x3a,	%ah
 	int	$0x21
 	jc	.error

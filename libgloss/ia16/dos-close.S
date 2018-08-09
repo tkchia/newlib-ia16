@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		_close
 _close:
-	movw	%sp,	%bx
-	movw	2(%bx),	%bx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%bx)
 	movb	$0x3e,	%ah
 	int	$0x21
 	jc	.error

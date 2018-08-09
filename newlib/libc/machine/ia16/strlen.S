@@ -7,12 +7,12 @@
 	.section	".text"
 	.global		strlen
 strlen:
+	ENTER_BX_
 	pushw   %di
-	movw    %sp,    %bx
 	pushw   %es
+	MOV_ARG0W_BX_(%di)
 	movw    %ds,    %ax
 	movw    %ax,    %es
-	movw    4(%bx), %di
 	movw	%di,	%bx
 	xorb	%al,	%al
 	movw    $-1,    %cx

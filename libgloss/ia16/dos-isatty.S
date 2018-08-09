@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		_isatty
 _isatty:
-	movw	%sp,	%bx
-	movw	2(%bx),	%bx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%bx)
 	movw	$0x4400,	%ax
 	int	$0x21
 	jc	.error

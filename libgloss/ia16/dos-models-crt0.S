@@ -173,19 +173,26 @@ _start:
 .Lno_reverse:
 	movw	%sp,	%ax
 	movw	%bp,	environ
+#ifndef __IA16_CALLCVT_REGPARMCALL
 	pushw	%bp		# envp
 	pushw	%ax		# argp
 	pushw	%dx		# argc
-	call	main
-#ifdef __IA16_CALLCVT_CDECL
-	addw	$6,	%sp
 #else
+	xchgw	%ax,	%dx
+	movw	%bp,	%bx
+#endif
+	call	main
+#if defined __IA16_CALLCVT_CDECL
+	addw	$6,	%sp
+#elif defined __IA16_CALLCVT_STDCALL
 	# We do not know whether main (...) pops no arguments, two
 	# arguments (argc, argv), or three arguments (argc, argv, envp).  So
 	# pop nothing here; it should be safe to call exit (.) with extra
 	# stuff on the stack.
 #endif
+#ifndef __IA16_CALLCVT_REGPARMCALL
 	pushw	%ax
+#endif
 	call	exit
 
 .Linside_backslash_other:
@@ -274,9 +281,14 @@ _start:
 
 	.global _exit
 _exit:
+#ifdef __IA16_CALLCVT_REGPARMCALL
+	pushw	%ax
+#endif
 
 	.section .startupC
 
+#ifndef __IA16_CALLCVT_REGPARMCALL
+#endif
 	popw	%bx
 	popw	%ax
 	movb	$0x4c,	%ah

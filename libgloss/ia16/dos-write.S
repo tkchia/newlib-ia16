@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		_write
 _write:
-	movw	%sp,	%bx
-	movw	6(%bx),	%cx
+	ENTER_BX_
+	MOV_ARG4W_BX_(%cx)
 	/*
 	 * int $0x21 with %ah == 0x40 and %cx == 0 will truncate or extend
 	 * the file to the current position (www.ctyme.com/intr/rb-2791.htm).
@@ -20,8 +20,8 @@ _write:
 	 * it specially.
 	 */
 	jcxz	.nowrite
-	movw	4(%bx),	%dx
-	movw	2(%bx),	%bx
+	MOV_ARG2W_BX_(%dx)
+	MOV_ARG0W_BX_(%bx)
 	movb	$0x40,	%ah
 	int	$0x21
 	jnc	.noerror

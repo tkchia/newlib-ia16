@@ -7,10 +7,11 @@
 	.section	".text"
 	.global		strchr
 strchr:
+	ENTER_BX_
 	pushw	%si
 	movw	%sp,	%bx
-	movw	4(%bx),	%si
-	movb	6(%bx), %ah
+	MOV_ARG0W_BX_(%si)
+	MOV_ARG2B_BX_(%ah)
 .L1:
 	lodsb
 	cmp	%al,	%ah

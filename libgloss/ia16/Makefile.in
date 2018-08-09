@@ -176,7 +176,6 @@ $(DOS_SMALL_CRT0) : dos-models-crt0.S
 
 dos-chdir.o: dos-chdir.S call-cvt.h
 dos-close.o: dos-close.S call-cvt.h
-dos-com-write.o: dos-com-write.S call-cvt.h
 dos-getcwd.o: dos-getcwd.S call-cvt.h
 dos-isatty.o: dos-isatty.S call-cvt.h
 dos-lseek.o: dos-lseek.S call-cvt.h

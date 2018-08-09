@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		_mkdir
 _mkdir:
-	movw	%sp,	%bx
-	movw	2(%bx),	%dx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%dx)
 	movb	$0x39,	%ah
 	int	$0x21
 	jc	.error

@@ -31,7 +31,11 @@ setjmp:
 	pushw	%bx		# 2(%bp)
 	pushw	%bp		# 0(%bp)
 	movw	%sp,	%bp
+#ifndef __IA16_CALLCVT_REGPARMCALL
 	movw	6(%bp),	%bx	# %bx points to jumpbuf.
+#else
+	movw	%ax,	%bx
+#endif
 	movw	%ax,	(%bx)	# Save %ax.
 	movw	2(%bp),	%ax
 	movw	%ax,	2(%bx)	# Save %bx.
@@ -61,8 +65,13 @@ _longjmp:
 longjmp:
 #endif
 	movw	%sp,	%bp
+#ifndef __IA16_CALLCVT_REGPARMCALL
 	movw	4(%bp),	%ax	# Get retval.
 	movw	2(%bp),	%bp	# Get jmpbuf.
+#else
+	movw	%ax,	%bp
+	movw	%dx,	%ax
+#endif
 	movw	%ax,	0(%bp)	# Store retval in jmpbuf[0].
 
 	lesw	14(%bp),%sp	# Restore %sp and %es.

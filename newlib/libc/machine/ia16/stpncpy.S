@@ -7,13 +7,13 @@
 	.section	".text"
 	.global		stpncpy
 stpncpy:
-	movw	%sp,	%bx
+	ENTER_BX_
 	pushw	%si
 	pushw	%di
 	pushw	%es
-	movw	2(%bx), %di
-	movw	4(%bx), %si
-	movw	6(%bx), %cx
+	MOV_ARG0W_BX_(%di)
+	MOV_ARG2W_BX_(%si)
+	MOV_ARG4W_BX_(%cx)
 	movw	%ds,	%ax
 	movw	%ax,	%es
 	movw	%di,	%bx

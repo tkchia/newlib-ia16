@@ -7,10 +7,10 @@
 	.section	".text"
 	.global		_read
 _read:
-	movw	%sp,	%bx
-	movw	4(%bx),	%dx
-	movw	6(%bx),	%cx
-	movw	2(%bx),	%bx
+	ENTER_BX_
+	MOV_ARG2W_BX_(%dx)
+	MOV_ARG4W_BX_(%cx)
+	MOV_ARG0W_BX_(%bx)
 	movb	$0x3f,	%ah
 	int	$0x21
 	jnc	.noerror

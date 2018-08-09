@@ -7,12 +7,12 @@
 	.section	".text"
 	.global		_getcwd
 _getcwd:
+	ENTER_BX_
 	pushw	%si
-	movw	%sp,	%bx
-	cmpw	$64,	6(%bx)
+	cmpw	$64,	ARG2_BX_
 	movw	$0x101,	%ax  # ERANGE
 	jl	.error
-	movw	4(%bx),	%si
+	MOV_ARG0W_BX_(%si)
 	movb	$0,	%dl
 	movb	$0x47,	%ah
 	int	$0x21

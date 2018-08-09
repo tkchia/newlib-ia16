@@ -7,8 +7,8 @@
 	.section	".text"
 	.global		dup
 dup:
-	movw	%sp,	%bx
-	movw	2(%bx),	%bx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%bx)
 	movb	$0x45,	%ah
 	int	$0x21
 	jnc	.noerror

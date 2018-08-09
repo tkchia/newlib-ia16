@@ -7,13 +7,13 @@
 	.section	".text"
 	.global		rawmemchr
 rawmemchr:
+	ENTER_BX_
 	pushw	%di
-	movw	%sp,	%bx
 	pushw	%es
-	movw	%ds,	%ax
-	movw	%ax,	%es
-	movw	4(%bx),	%di
-	movb	6(%bx),	%al
+	movw	%ds,	%di
+	movw	%di,	%es
+	MOV_ARG0W_BX_(%di)
+	MOV_ARG2B_BX_(%al)
 	movw	$-1,	%cx
 	repne	scasb
 	movw	%di,	%ax

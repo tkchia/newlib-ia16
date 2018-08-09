@@ -73,8 +73,8 @@
 	.global	_times
 _times:
 	movw	%es,	%cx
-	movw	%sp,	%bx
-	movw	2(%bx),	%bx
+	ENTER_BX_
+	MOV_ARG0W_BX_(%bx)
 	/* Fill ->tms_utime.  */
 	lesw	.Luser_counter+2, %dx
 	movw	%dx,	(%bx)

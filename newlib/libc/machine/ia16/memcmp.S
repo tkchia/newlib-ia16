@@ -7,15 +7,15 @@
 	.section	".text"
 	.global		memcmp
 memcmp:
-	movw	%sp,	%bx
+	ENTER_BX_
 	pushw	%si
 	pushw	%di
 	pushw	%es
-	movw	%ds,	%ax
-	movw	%ax,	%es
-	movw	2(%bx),	%si
-	movw	4(%bx),	%di
-	movw	6(%bx), %cx
+	movw	%ds,	%si
+	movw	%si,	%es
+	MOV_ARG0W_BX_(%si)
+	MOV_ARG2W_BX_(%di)
+	MOV_ARG4W_BX_(%cx)
 	movw	%cx,	%dx
 	shrw	$1,	%cx
 	repe	cmpsw
