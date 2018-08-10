@@ -9,7 +9,7 @@
 _getcwd:
 	ENTER_BX_
 	pushw	%si
-	cmpw	$64,	ARG2_BX_
+	cmpw	$64,	ARG2W_BX_
 	movw	$0x101,	%ax  # ERANGE
 	jl	.error
 	MOV_ARG0W_BX_(%si)

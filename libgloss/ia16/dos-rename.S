@@ -10,8 +10,8 @@ _rename:
 	ENTER_BX_
 	pushw	%es
 	pushw	%di
-	movw	%ds,	%ax
-	movw	%ax,	%es
+	movw	%ds,	%di
+	movw	%di,	%es
 	MOV_ARG2W_BX_(%di)
 	MOV_ARG0W_BX_(%dx)
 	movb	$0x56,	%ah

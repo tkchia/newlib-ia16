@@ -72,28 +72,28 @@
 # define ARG2W_BX_		%dx
 # define ARG4W_BX_		%bx
 # define ARG6W_BX_		%cx
-# define MOV_ARG0W_BX_(reg)	.ifnc "%ax", reg; \
+# define MOV_ARG0W_BX_(reg)	.ifnc %ax, reg; \
 				movw %ax, reg; \
 				.endif
-# define MOV_ARG2W_BX_(reg)	.ifnc "%dx", reg; \
+# define MOV_ARG2W_BX_(reg)	.ifnc %dx, reg; \
 				movw %dx, reg; \
 				.endif
-# define MOV_ARG4W_BX_(reg)	.ifnc "%bx", reg; \
+# define MOV_ARG4W_BX_(reg)	.ifnc %bx, reg; \
 				movw %bx, reg; \
 				.endif
-# define MOV_ARG6W_BX_(reg)	.ifnc "%cx", reg; \
+# define MOV_ARG6W_BX_(reg)	.ifnc %cx, reg; \
 				movw %cx, reg; \
 				.endif
-# define MOV_ARG0B_BX_(reg)	.ifnc "%al", reg; \
+# define MOV_ARG0B_BX_(reg)	.ifnc %al, reg; \
 				movb %al, reg; \
 				.endif
-# define MOV_ARG2B_BX_(reg)	.ifnc "%dl", reg; \
+# define MOV_ARG2B_BX_(reg)	.ifnc %dl, reg; \
 				movb %dl, reg; \
 				.endif
-# define MOV_ARG4B_BX_(reg)	.ifnc "%bl", reg; \
+# define MOV_ARG4B_BX_(reg)	.ifnc %bl, reg; \
 				movb %bl, reg; \
 				.endif
-# define MOV_ARG6B_BX_(reg)	.ifnc "%cl", reg; \
+# define MOV_ARG6B_BX_(reg)	.ifnc %cl, reg; \
 				movb %cl, reg; \
 				.endif
 # define RET_(n)		.if (n)>8; \
@@ -110,7 +110,7 @@
 # ifndef __IA16_CALLCVT_CDECL
 #   warning "not sure which calling convention is in use; assuming cdecl"
 # endif
-# define ENTER_BX_(n)		movw %sp, %bx
+# define ENTER_BX_		movw %sp, %bx
 # define ARG0W_BX_		2(%bx)
 # define ARG2W_BX_		4(%bx)
 # define ARG4W_BX_		6(%bx)
