@@ -14,8 +14,8 @@ memcpy:
 	pushw	%es
 	movw	%ds,	%si
 	movw	%si,	%es
-	MOV_ARG0W_BX_(%di)
-	movw	%di,	%ax
+	MOV_ARG0W_BX_(%ax)
+	movw	%ax,	%di
 	MOV_ARG2W_BX_(%si)
 	MOV_ARG4W_BX_(%cx)
 	shrw	$1,	%cx

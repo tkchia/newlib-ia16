@@ -282,14 +282,16 @@ _start:
 	.global _exit
 _exit:
 #ifdef __IA16_CALLCVT_REGPARMCALL
-	pushw	%ax
+	xchgw	%ax,	%si
 #endif
 
 	.section .startupC
 
 #ifndef __IA16_CALLCVT_REGPARMCALL
-#endif
 	popw	%bx
 	popw	%ax
+#else
+	xchgw	%ax,	%si
+#endif
 	movb	$0x4c,	%ah
 	int	$0x21
