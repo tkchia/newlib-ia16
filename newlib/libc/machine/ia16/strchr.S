@@ -9,7 +9,6 @@
 strchr:
 	ENTER_BX_
 	pushw	%si
-	movw	%sp,	%bx
 	MOV_ARG0W_BX_(%si)
 	MOV_ARG2B_BX_(%ah)
 .L1:

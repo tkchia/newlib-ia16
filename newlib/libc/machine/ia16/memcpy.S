@@ -8,7 +8,6 @@
 	.global		memcpy
 memcpy:
 	ENTER_BX_
-	movw	%sp,	%bx
 	pushw	%si
 	pushw	%di
 	pushw	%es

@@ -8,7 +8,6 @@
 	.global		strcmp
 strcmp:
 	ENTER_BX_
-	movw	%sp,	%bx
 	MOV_ARG0W_BX_(%si)
 	MOV_ARG2W_BX_(%bx)
 	decw	%bx
