@@ -9,9 +9,9 @@
 strncmp:
 	ENTER_BX_
 	pushw	%si
-	MOV_ARG2W_BX_(%si)
+	MOV_ARG0W_BX_(%si)
 	MOV_ARG4W_BX_(%cx)
-	MOV_ARG0W_BX_(%bx)
+	MOV_ARG2W_BX_(%bx)
 	jcxz	.L3
 	decw	%bx
 .L1:
