@@ -122,12 +122,13 @@ CRT0		= $(DOS_TINY_CRT0)
 INCLUDES += -I$(srcdir) -I. -I$(srcdir)/.. -I../libnosys
 
 INSTALL_FILES = \
-  ${DOS_TINY_BSP} ${DOS_TINY_CRT0} \
-  ${DOS_SMALL_BSP} ${DOS_SMALL_CRT0} \
-  ${ELKS_BSP} ${ELKS_CRT0} \
-  ${NANO_STDIO_BSP} ${IPRINTF_BSP} ${ISCANF_BSP} \
-  ${ALL_SCRIPTS}
-
+  $(DOS_TINY_BSP) $(DOS_TINY_CRT0) \
+  $(DOS_SMALL_BSP) $(DOS_SMALL_CRT0) \
+  $(NANO_STDIO_BSP) $(IPRINTF_BSP) $(ISCANF_BSP) \
+  $(DOS_TINY_SCRIPTS) $(DOS_SMALL_SCRIPTS) $(AUTOFLOAT_STDIO_SCRIPTS)
+ifneq "" "$(filter -mprotected-mode -melks%,$(MULTILIB))"
+  INSTALL_FILES += $(ELKS_BSP) $(ELKS_CRT0) $(ELKS_SCRIPTS)
+endif
 #
 # build a test program for each target board. Just trying to get
 # it to link is a good test, so we ignore all the errors for now.
