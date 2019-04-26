@@ -1,6 +1,7 @@
 /* dos-open.c basic open file for DOS
  *
  * Copyright (c) 2018 Bart Oldeman
+ * Copyright (c) 2019 TK Chia
  *
  * The authors hereby grant permission to use, copy, modify, distribute,
  * and license this software and its documentation for any purpose, provided
@@ -23,7 +24,8 @@
 extern int errno;
 
 #ifndef FP_SEG
-#define FP_SEG(x) ((unsigned)((unsigned long)(void __far *)(x) >> 16))
+#define FP_SEG(x) \
+  __builtin_ia16_selector ((unsigned)((unsigned long)(void __far *)(x) >> 16))
 #endif
 
 /* the following flag combinations are used by fopen():

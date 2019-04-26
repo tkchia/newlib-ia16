@@ -25,7 +25,8 @@
 extern int errno;
 
 #ifndef FP_SEG
-#define FP_SEG(x) ((unsigned)((unsigned long)(void __far *)(x) >> 16))
+#define FP_SEG(x) \
+  __builtin_ia16_selector ((unsigned)((unsigned long)(void __far *)(x) >> 16))
 #endif
 
 extern time_t __msdos_cvt_file_time (unsigned, unsigned);
