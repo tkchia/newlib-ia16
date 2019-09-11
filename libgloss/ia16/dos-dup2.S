@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_dup2.S.LIBGLOSS)
 	.global		dup2
 dup2:
 	ENTER_BX_(4)

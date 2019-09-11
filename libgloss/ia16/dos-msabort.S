@@ -15,12 +15,14 @@
 /* Implementation of abort () for MS-DOS and the small memory model.  This
    implementation tries to work properly even if %ss is wrong.  */
 
+#include "call-cvt.h"
+
 	.arch	i8086, jumps
 	.code16
 
 	.text
 	.balign	2
-0:	.reloc	., R_386_OZSEG16, abort_stack
+0:	SEG_RELOC_ (., abort_stack)
 	.hword	0
 	.global	abort
 abort:

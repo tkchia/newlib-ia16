@@ -23,16 +23,21 @@
 	.global		_setjmp
 _setjmp:
 #else
-	.section	".text"
+	TEXT_ (setjmp.S.NEWLIB)
 	.global		setjmp
 setjmp:
 #endif
+#		%cs (if medium)	# 6(%bp)
 #		%ip		# 4(%bp)
 	pushw	%bx		# 2(%bp)
 	pushw	%bp		# 0(%bp)
 	movw	%sp,	%bp
 #ifndef __IA16_CALLCVT_REGPARMCALL
+# ifndef __IA16_CMODEL_IS_FAR_TEXT
 	movw	6(%bp),	%bx	# %bx points to jumpbuf.
+# else
+	movw	8(%bp),	%bx
+# endif
 #else
 	movw	%ax,	%bx
 #endif
@@ -45,11 +50,19 @@ setjmp:
 	movw	%di,	10(%bx)	# Save %di.
 	movw	0(%bp),	%ax
 	movw	%ax,	12(%bx)	# Save %bp.
+#ifndef __IA16_CMODEL_IS_FAR_TEXT
 	leaw	6(%bp),	%ax
+#else
+	leaw	8(%bp),	%ax
+#endif
 	movw	%ax,	14(%bx)	# Save %sp.
 	movw	4(%bp),	%ax
 	movw	%es,	16(%bx)	# Save %es.
 	movw	%ax,	18(%bx)	# Save %ip.
+#ifdef __IA16_CMODEL_IS_FAR_TEXT
+	movw	6(%bp),	%ax
+	movw	%ax,	20(%bx)	# Save %cs.
+#endif
 
 # Return 0 to caller.
 	xorw	%ax,	%ax
@@ -66,8 +79,13 @@ longjmp:
 #endif
 	movw	%sp,	%bp
 #ifndef __IA16_CALLCVT_REGPARMCALL
+# ifndef __IA16_CMODEL_IS_FAR_TEXT
 	movw	4(%bp),	%ax	# Get retval.
 	movw	2(%bp),	%bp	# Get jmpbuf.
+# else
+	movw	6(%bp),	%ax
+	movw	4(%bp),	%bp
+# endif
 #else
 	movw	%ax,	%bp
 	movw	%dx,	%ax
@@ -75,6 +93,9 @@ longjmp:
 	movw	%ax,	0(%bp)	# Store retval in jmpbuf[0].
 
 	lesw	14(%bp),%sp	# Restore %sp and %es.
+#ifdef __IA16_CMODEL_IS_FAR_TEXT
+	pushw	20(%bp)
+#endif
 	pushw	18(%bp)		# Restore %ip.
 	movw	10(%bp),%di	# Restore %di.
 	movw	8(%bp),	%si	# Restore %si.

@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_getcwd.S.LIBGLOSS)
 	.global		_getcwd
 _getcwd:
 	ENTER_BX_(4)

@@ -6,7 +6,7 @@ cmd2='#'
 w1=with
 w2=with
 w3=without
-crt0=-l:dos-com-crt0.o
+crt0=-l:dos-t-c0.o
 case "$1" in
   -nostdlib)
     cmd1='/^@if_starts@/,/^@endif@/ d'
@@ -20,7 +20,7 @@ case "$1" in
      cmd2='/^@if_libs@/,/^@endif@/ d'
      w2=without;;
   -mdpmiable)
-     crt0=-l:dpm-mt-crt0.o
+     crt0=-l:dpm-t-c0.o
      w3=with;;
 esac
 sed -e "$cmd1" -e "$cmd2" -e "s;@crt0@;$crt0;g" \

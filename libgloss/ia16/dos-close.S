@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_close.S.LIBGLOSS)
 	.global		_close
 _close:
 	ENTER_BX_(2)

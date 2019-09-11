@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (memchr.S.NEWLIB)
 	.global		memchr
 memchr:
 	ENTER_BX_(6)

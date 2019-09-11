@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_write.S.LIBGLOSS)
 	.global		_write
 _write:
 	ENTER_BX_(6)

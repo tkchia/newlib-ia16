@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (strcpy.S.NEWLIB)
 	.global		strcpy
 strcpy:
 	ENTER_BX_(4)

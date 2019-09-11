@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (memmove.S.NEWLIB)
 	.global		memmove
 memmove:
 	ENTER_BX_(6)

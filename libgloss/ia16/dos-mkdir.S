@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_mkdir.S.LIBGLOSS)
 	.global		_mkdir
 _mkdir:
 	ENTER_BX_(4)

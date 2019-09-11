@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_read.S.LIBGLOSS)
 	.global		_read
 _read:
 	ENTER_BX_(6)

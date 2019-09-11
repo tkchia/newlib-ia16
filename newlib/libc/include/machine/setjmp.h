@@ -88,8 +88,13 @@ _BEGIN_STD_C
 #endif
 
 #ifdef __ia16__
-/* We save ax, bx, cx, dx, si, di, bp, sp, ip, es.  */
-#define _JBLEN 10
+/* We save ax, bx, cx, dx, si, di, bp, sp, ip, es.  Also save cs for the
+   medium memory model.  */
+# ifdef __IA16_CMODEL_IS_FAR_TEXT
+#   define _JBLEN 11
+# else
+#   define _JBLEN 10
+# endif
 #endif
 
 #ifdef __i386__

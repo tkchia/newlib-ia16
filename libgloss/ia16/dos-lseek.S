@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_lseek.S.LIBGLOSS)
 	.global		_lseek
 _lseek:
 	ENTER_BX_(8)

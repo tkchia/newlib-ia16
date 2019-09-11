@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_chdir.S.LIBGLOSS)
 	.global		_chdir
 _chdir:
 	ENTER_BX_(2)

@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_rename.S.LIBGLOSS)
 	.global		_rename
 _rename:
 	ENTER_BX_(4)

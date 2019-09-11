@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_isatty.S.LIBGLOSS)
 	.global		_isatty
 _isatty:
 	ENTER_BX_(2)

@@ -64,7 +64,8 @@ DOS_COMMON_OBJS = dos-chdir.o dos-close.o dos-cvt-file-time.o dos-dup.o \
 		  dos-rename.o dos-rmdir.o dos-sbrk.o dos-stat.o dos-times.o \
 		  dos-unlink.o dos-usleep.o dos-write.o
 PROTECTED_MODE_P = $(filter -mprotected-mode -mdpmiable -melks%, \
-			    $(CC) $(MULTILIB) $(CFLAGS))
+			    $(CC) $(MULTILIB))
+CMODEL_MEDIUM_P = $(filter -mcmodel=medium,$(CC) $(MULTILIB))
 DOS_COMMON_OBJS += $(if $(PROTECTED_MODE_P), \
 			dpm-hosted.o dpm-r-dos.o dpm-r-func.o dpm-abort.o)
 
@@ -73,8 +74,8 @@ DOS_TINY_OBJS	+= $(if $(PROTECTED_MODE_P),dpm-mtds.o,dos-mtabort.o)
 DOS_TINY_CFLAGS	= -mseparate-code-segment -g -Os
 DOS_TINY_ASFLAGS =
 DOS_TINY_SCRIPTS = dos-com.ld dos-mt.ld dos-mts.ld dos-mtl.ld dos-mtsl.ld
-DOS_TINY_BSP	= libdos-com.a
-DOS_TINY_CRT0	= dos-com-crt0.o
+DOS_TINY_BSP	= libdos-t.a
+DOS_TINY_CRT0	= dos-t-c0.o
 
 DOS_SMALL_OBJS	= $(DOS_COMMON_OBJS)
 DOS_SMALL_OBJS	+= $(if $(PROTECTED_MODE_P),dpm-mscs.o dpm-msds.o, \
@@ -83,16 +84,23 @@ DOS_SMALL_CFLAGS = $(DOS_TINY_CFLAGS)
 DOS_SMALL_ASFLAGS = $(DOS_TINY_ASFLAGS)
 DOS_SMALL_SCRIPTS = dos-exe-small.ld dos-ms.ld dos-mss.ld dos-msl.ld \
 		    dos-mssl.ld
-DOS_SMALL_BSP	= libdos-exe-small.a
-DOS_SMALL_CRT0	= dos-exe-small-crt0.o
+DOS_SMALL_BSP	= libdos-s.a
+DOS_SMALL_CRT0	= dos-s-c0.o
+
+DOS_MEDIUM_OBJS	= $(DOS_COMMON_OBJS)
+DOS_MEDIUM_CFLAGS = -mcmodel=medium $(DOS_TINY_CFLAGS)
+DOS_MEDIUM_ASFLAGS = -mcmodel=medium $(DOS_TINY_ASFLAGS)
+DOS_MEDIUM_SCRIPTS = dos-mm.ld dos-mms.ld dos-mml.ld dos-mmsl.ld
+DOS_MEDIUM_BSP	= libdos-m.a
+DOS_MEDIUM_CRT0	= dos-m-c0.o
 
 DPMIABLE_TINY_OBJS =
 DPMIABLE_TINY_SCRIPTS = dpm-mt.ld dpm-mts.ld dpm-mtl.ld dpm-mtsl.ld
-DPMIABLE_TINY_CRT0 = dpm-mt-crt0.o
+DPMIABLE_TINY_CRT0 = dpm-t-c0.o
 
 DPMIABLE_SMALL_OBJS =
 DPMIABLE_SMALL_SCRIPTS = dpm-ms.ld dpm-mss.ld dpm-msl.ld dpm-mssl.ld
-DPMIABLE_SMALL_CRT0 = dpm-ms-crt0.o
+DPMIABLE_SMALL_CRT0 = dpm-s-c0.o
 
 # This is a hack to allow us to build Newlib's nano formatted I/O functions
 # as a separate "board support package", so that we do not have to build the
@@ -119,17 +127,28 @@ ISCANF_BSP	= iscnf-fw.a
 AUTOFLOAT_STDIO_SCRIPTS = libastdio.a libanstdio.a
 
 ALL_SCRIPTS	= $(ELKS_SCRIPTS) $(DOS_TINY_SCRIPTS) $(DOS_SMALL_SCRIPTS) \
-		  $(DPMIABLE_TINY_SCRIPTS) $(DPMIABLE_SMALL_SCRIPTS) \
-		  $(AUTOFLOAT_STDIO_SCRIPTS)
+		  $(DOS_MEDIUM_SCRIPTS) $(DPMIABLE_TINY_SCRIPTS) \
+		  $(DPMIABLE_SMALL_SCRIPTS) $(AUTOFLOAT_STDIO_SCRIPTS)
 ALL_BSP		= $(ELKS_BSP) $(DOS_TINY_BSP) $(DOS_SMALL_BSP) \
+		  $(DOS_MEDIUM_BSP) \
 		  $(NANO_STDIO_BSP) $(IPRINTF_BSP) $(ISCANF_BSP)
 
-OBJS		= $(DOS_TINY_OBJS)
-CFLAGS		= $(DOS_TINY_CFLAGS)
-ASFLAGS		= $(DOS_TINY_ASFLAGS)
-SCRIPTS		= $(DOS_TINY_SCRIPTS)
-BSP		= $(DOS_TINY_BSP)
-CRT0		= $(DOS_TINY_CRT0)
+OBJS		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_OBJS), \
+		       $(sort $(DOS_TINY_OBJS) $(DOS_SMALL_OBJS)))
+CFLAGS		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_CFLAGS), $(DOS_SMALL_CFLAGS))
+ASFLAGS		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_ASFLAGS), $(DOS_SMALL_ASFLAGS))
+SCRIPTS		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_SCRIPTS), \
+		       $(sort $(DOS_TINY_SCRIPTS) $(DOS_SMALL_SCRIPTS)))
+BSP		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_BSP), \
+		       $(sort $(DOS_TINY_BSP) $(DOS_SMALL_BSP)))
+CRT0		= $(if $(CMODEL_MEDIUM_P), \
+		       $(DOS_MEDIUM_CRT0), \
+		       $(sort $(DOS_TINY_CRT0) $(DOS_SMALL_CRT0)))
 
 # Host specific makefile fragment comes in here.
 @host_makefile_frag@
@@ -138,10 +157,8 @@ CRT0		= $(DOS_TINY_CRT0)
 INCLUDES += -I$(srcdir) -I. -I$(srcdir)/.. -I../libnosys
 
 INSTALL_FILES = \
-  $(DOS_TINY_BSP) $(DOS_TINY_CRT0) \
-  $(DOS_SMALL_BSP) $(DOS_SMALL_CRT0) \
-  $(NANO_STDIO_BSP) $(IPRINTF_BSP) $(ISCANF_BSP) \
-  $(DOS_TINY_SCRIPTS) $(DOS_SMALL_SCRIPTS) $(AUTOFLOAT_STDIO_SCRIPTS)
+  $(BSP) $(CRT0) $(NANO_STDIO_BSP) $(IPRINTF_BSP) $(ISCANF_BSP) \
+  $(SCRIPTS) $(AUTOFLOAT_STDIO_SCRIPTS)
 INSTALL_FILES += $(if $(PROTECTED_MODE_P), \
 		      $(DPMIABLE_TINY_CRT0) $(DPMIABLE_SMALL_CRT0) \
 		      $(DPMIABLE_TINY_SCRIPTS) $(DPMIABLE_SMALL_SCRIPTS) \
@@ -178,6 +195,10 @@ $(objroot)/newlib/$(DOS_SMALL_BSP):
 	ln -s ../libgloss/ia16/$(DOS_SMALL_BSP) $(objroot)/newlib
 $(objroot)/newlib/$(DOS_SMALL_CRT0):
 	ln -s ../libgloss/ia16/$(DOS_SMALL_CRT0) $(objroot)/newlib
+$(objroot)/newlib/$(DOS_MEDIUM_BSP):
+	ln -s ../libgloss/ia16/$(DOS_MEDIUM_BSP) $(objroot)/newlib
+$(objroot)/newlib/$(DOS_MEDIUM_CRT0):
+	ln -s ../libgloss/ia16/$(DOS_MEDIUM_CRT0) $(objroot)/newlib
 $(objroot)/newlib/$(DPMIABLE_TINY_CRT0):
 	ln -s ../libgloss/ia16/$(DPMIABLE_TINY_CRT0) $(objroot)/newlib
 $(objroot)/newlib/$(DPMIABLE_SMALL_CRT0):
@@ -244,11 +265,15 @@ $(ELKS_BSP) : $(ELKS_SYS_OBJS) $(ELKS_LIB_OBJS)
 	$(AR) rcs $@ $+
 
 $(DOS_TINY_CRT0) : dos-models-crt0.S
-	$(CC) $(CFLAGS_FOR_TARGET) -DTINY -USMALL -UDPMIABLE \
+	$(CC) $(CFLAGS_FOR_TARGET) -DTINY -USMALL -UMEDIUM -UDPMIABLE \
 	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
 
 $(DOS_SMALL_CRT0) : dos-models-crt0.S
-	$(CC) $(CFLAGS_FOR_TARGET) -UTINY -DSMALL -UDPMIABLE \
+	$(CC) $(CFLAGS_FOR_TARGET) -UTINY -DSMALL -UMEDIUM -UDPMIABLE \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+$(DOS_MEDIUM_CRT0) : dos-models-crt0.S
+	$(CC) $(CFLAGS_FOR_TARGET) -UTINY -USMALL -DMEDIUM -UDPMIABLE \
 	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
 
 $(DPMIABLE_TINY_CRT0) : dos-models-crt0.S
@@ -284,6 +309,9 @@ $(DOS_TINY_BSP) : $(DOS_TINY_OBJS)
 	$(AR) rcs $@ $+
 
 $(DOS_SMALL_BSP) : $(DOS_SMALL_OBJS)
+	$(AR) rcs $@ $+
+
+$(DOS_MEDIUM_BSP) : $(DOS_MEDIUM_OBJS)
 	$(AR) rcs $@ $+
 
 # When building the nano I/O "BSP", we need to also extract the modules from
@@ -329,50 +357,40 @@ $(NANO_STDIO_BSP): $(objroot)/newlib/libc/libc.a $(NANO_STDIO_OBJS)
 $(IPRINTF_BSP): $(IPRINTF_OBJS)
 	$(AR) rcs $@ $+
 
-i-printf.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global printf'; \
-	 echo 'printf: jmp iprintf') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-%printf.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global $*printf'; \
-	 echo '$*printf: jmp $*iprintf') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-printfr.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global _printf_r'; \
-	 echo '_printf_r: jmp _iprintf_r') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-%printfr.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global _$*printf_r'; \
-	 echo '_$*printf_r: jmp _$*iprintf_r') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
+i-printf.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH= -DT=printf \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-%printf.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=$* -DT=printf \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-printfr.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=_ -DT=printf_r \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-%printfr.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=_$* -DT=printf_r \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
 
 $(ISCANF_BSP): $(ISCANF_OBJS)
 	$(AR) rcs $@ $+
 
-i-scanf.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global scanf'; \
-	 echo 'scanf: jmp iscanf') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-%scanf.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global $*scanf'; \
-	 echo '$*scanf: jmp $*iscanf') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-scanfr.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global _scanf_r'; \
-	 echo '_scanf_r: jmp _iscanf_r') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
-i-%scanfr.o:
-	(echo '.arch i8086, jumps; .code16; .text; .global _$*scanf_r'; \
-	 echo '_$*scanf_r: jmp _$*iscanf_r') | \
-	  $(CC) $(CFLAGS_FOR_TARGET) $(ASFLAGS_FOR_TARGET) $(ASFLAGS) \
-	    -c $(CFLAGS) -x assembler - -o $@
+i-scanf.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH= -DT=scanf \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-%scanf.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=$* -DT=scanf \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-scanfr.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=_ -DT=scanf_r \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
+
+i-%scanfr.o: i-stdio.S
+	$(CC) $(CFLAGS_FOR_TARGET) -DH=_$* -DT=scanf_r \
+	  $(ASFLAGS_FOR_TARGET) $(ASFLAGS) -c $(CFLAGS) $< -o $@
 
 .c.S:
 	${CC} ${CFLAGS_FOR_TARGET} -c $<

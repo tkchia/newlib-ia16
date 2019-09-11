@@ -30,6 +30,7 @@
 #define _CLOCKS_PER_SEC_ 1000
 #endif
 
+	TEXT_ (dos_times.S.LIBGLOSS)
 	.section .text
 
 .Lctor_times:
@@ -51,7 +52,7 @@
 	movw	$.Lour_int_0x1c, %dx
 	int	$0x21
 	popw	%es
-	ret
+	RET_ (0)
 
 .Ldtor_times:
 #ifdef __IA16_FEATURE_PROTECTED_MODE
@@ -78,7 +79,7 @@
 	int	$0x21
 	popw	%ds
 0:	popw	%es
-	ret
+	RET_ (0)
 
 	.global	_times
 _times:
@@ -153,12 +154,12 @@ _times:
 	.section .ctors.65535
 
 	.balign	2
-	.hword	.Lctor_times
+	TEXT_PTR_ (.Lctor_times)
 
 	.section .dtors.65535
 
 	.balign	2
-	.hword	.Ldtor_times
+	TEXT_PTR_ (.Ldtor_times)
 
 	.lcomm	.Lp_orig_int_0x1c, 4
 	.lcomm	.Lp_indos, 4

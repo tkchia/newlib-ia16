@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_unlink.S.LIBGLOSS)
 	.global		_unlink
 _unlink:
 	ENTER_BX_(2)

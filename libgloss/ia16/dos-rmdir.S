@@ -5,7 +5,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (dos_rmdir.S.LIBGLOSS)
 	.global		_rmdir
 _rmdir:
 	ENTER_BX_(2)

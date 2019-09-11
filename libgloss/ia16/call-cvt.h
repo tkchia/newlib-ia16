@@ -19,8 +19,18 @@
  * `stdcall', `cdecl', and `regparmcall' calling conventions, and the `tiny'/
  * `small' and `medium' memory models, as implemented in ia16-elf-gcc.
  *
+ * - TEXT_ (TAG) or DATA_ (TAG) switches to a text or data section.  Whether
+ *   the section is near or far will depend on the memory model.  The section
+ *   name may include a tag TAG.
+ *
  * - JMP_ (FUNC) or CALL_ (FUNC) does a jump or a call to the function FUNC.
  *   Whether the jump or call is near or far will depend on the memory model.
+ *
+ * - SEG_RELOC_ (PLACE, SYM) installs an IA-16 segment relocation for the
+ *   symbol SYM at PLACE.
+ *
+ * - TEXT_PTR_ (FUNC) emits a near or far pointer --- depending on the memory
+ *   model --- to the function FUNC.
  *
  * - ENTER_BX_ (N) loads %sp into %bx to access stack arguments, if necessary.
  *   N is the number of bytes of arguments passed to the function.
@@ -86,23 +96,29 @@
 # define RET__			ret
 # define JMP_(func)		jmp func
 # define CALL_(func)		call func
+# define TEXT_(tag)		.text
+# define TEXT_PTR_(func)	.hword func
 #else
 # define FAR_ADJ__		2
 # define RET__			lret
+# define AUX___(aux)		#aux
 # ifdef __IA16_ABI_SEGELF
-#   define AUX___(aux)		#aux
 #   define AUX__(func)		AUX___(func##!)
-#   define JMP_(func)		.reloc .+3, R_386_SEG16, AUX__(func); \
-				ljmp $0, $func
-#   define CALL_(func)		.reloc .+3, R_386_SEG16, AUX__(func); \
-				lcall $0, $func
+#   define SEG_RELOC_(place, sym) \
+				.reloc (place), R_386_SEG16, AUX__(sym)
 # else
-#   define JMP_(func)		.reloc .+3, R_386_OZSEG16, func; \
-				ljmp $0, $func
-#   define CALL_(func)		.reloc .+3, R_386_OZSEG16, func; \
-				lcall $0, $func
+#   define SEG_RELOC_(place, sym) \
+				.reloc (place), R_386_OZSEG16, sym
 # endif
+# define JMP_(func)		SEG_RELOC_ (.+3, func); \
+				ljmp $0, $func
+# define CALL_(func)		SEG_RELOC_ (.+3, func); \
+				lcall $0, $func
+# define TEXT_(tag)		.section AUX___(.fartext.##tag##$), "ax"
+# define TEXT_PTR_(func)	SEG_RELOC_ (.+2, func); \
+				.hword func, 0
 #endif
+#define DATA_(tag)		.data
 #if defined __IA16_CALLCVT_REGPARMCALL
 # if __IA16_REGPARMCALL_ABI - 0 != 20180814L
 #   warning "regparmcall convention is not 20180814L, output code may be bogus"

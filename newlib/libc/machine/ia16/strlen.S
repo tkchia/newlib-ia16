@@ -4,7 +4,7 @@
 	.code16
 	.att_syntax prefix
 
-	.section	".text"
+	TEXT_ (strlen.S.NEWLIB)
 	.global		strlen
 strlen:
 	ENTER_BX_(2)
