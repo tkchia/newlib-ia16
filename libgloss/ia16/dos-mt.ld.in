@@ -39,7 +39,7 @@ ENTRY(_start)
 INPUT(-l:crtbegin.o -l:crtend.o @crt0@)
 @endif@
 @if_libs@
-GROUP(-lc -lgcc -ldos-com -lm)
+GROUP(-lc -lgcc -ldos-t -lm)
 @endif@
 
 SECTIONS

@@ -19,15 +19,15 @@
  * `stdcall', `cdecl', and `regparmcall' calling conventions, and the `tiny'/
  * `small' and `medium' memory models, as implemented in ia16-elf-gcc.
  *
+ * - SEG_RELOC_ (PLACE, SYM) installs an IA-16 segment relocation for the
+ *   symbol SYM at PLACE.
+ *
  * - TEXT_ (TAG) or DATA_ (TAG) switches to a text or data section.  Whether
  *   the section is near or far will depend on the memory model.  The section
  *   name may include a tag TAG.
  *
  * - JMP_ (FUNC) or CALL_ (FUNC) does a jump or a call to the function FUNC.
  *   Whether the jump or call is near or far will depend on the memory model.
- *
- * - SEG_RELOC_ (PLACE, SYM) installs an IA-16 segment relocation for the
- *   symbol SYM at PLACE.
  *
  * - TEXT_PTR_ (FUNC) emits a near or far pointer --- depending on the memory
  *   model --- to the function FUNC.
@@ -91,6 +91,12 @@
  * clobber %bx itself for the `cdecl' and `stdcall' conventions.
  */
 
+#ifdef __IA16_ABI_SEGELF
+# define AUX__(func)		AUX___(func##!)
+# define SEG_RELOC_(place, sym) .reloc (place), R_386_SEG16, AUX__(sym)
+#else
+# define SEG_RELOC_(place, sym) .reloc (place), R_386_OZSEG16, sym
+#endif
 #ifndef __IA16_CMODEL_IS_FAR_TEXT
 # define FAR_ADJ__		0
 # define RET__			ret
@@ -102,14 +108,6 @@
 # define FAR_ADJ__		2
 # define RET__			lret
 # define AUX___(aux)		#aux
-# ifdef __IA16_ABI_SEGELF
-#   define AUX__(func)		AUX___(func##!)
-#   define SEG_RELOC_(place, sym) \
-				.reloc (place), R_386_SEG16, AUX__(sym)
-# else
-#   define SEG_RELOC_(place, sym) \
-				.reloc (place), R_386_OZSEG16, sym
-# endif
 # define JMP_(func)		SEG_RELOC_ (.+3, func); \
 				ljmp $0, $func
 # define CALL_(func)		SEG_RELOC_ (.+3, func); \

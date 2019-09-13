@@ -12,15 +12,15 @@
  * they apply.
  */
 
-/* Implementation of abort () for MS-DOS and the small memory model.  This
-   implementation tries to work properly even if %ss is wrong.  */
+/* Implementation of abort () for MS-DOS and the small or medium memory
+   model.  This implementation tries to work properly even if %ss is wrong. */
 
 #include "call-cvt.h"
 
 	.arch	i8086, jumps
 	.code16
 
-	.text
+	TEXT_ (dos_msmmabort.S.LIBGLOSS)
 	.balign	2
 0:	SEG_RELOC_ (., abort_stack)
 	.hword	0
@@ -48,7 +48,7 @@ abort:
 	pushw	%ax
 	cld
 	sti
-	call	__ia16_abort_impl
+	CALL_ (__ia16_abort_impl)
 
 	.bss
 	.skip	128

@@ -16,12 +16,12 @@
  * This file now only contains an internal __ia16_abort_impl (.) routine
  * used by the user-callable abort ().
  *
- * abort () for MS-DOS now has separate implementations for the tiny and
- * small memory models, under the libgloss/ia16/ subtree.
+ * abort () for MS-DOS now has implementations for the tiny, small, and
+ * medium memory models, under the libgloss/ia16/ subtree.
  *
  * There is currently no abort () implementation for ELKS.
  *
- * TODO: move this file into libgloss/ia16/ too?  -- tkchia 20190301
+ * TODO: move this file into libgloss/ia16/ too?  -- tkchia 20190913
  */
 
 #include <signal.h>

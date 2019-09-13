@@ -64,8 +64,9 @@ DOS_COMMON_OBJS = dos-chdir.o dos-close.o dos-cvt-file-time.o dos-dup.o \
 		  dos-rename.o dos-rmdir.o dos-sbrk.o dos-stat.o dos-times.o \
 		  dos-unlink.o dos-usleep.o dos-write.o
 PROTECTED_MODE_P = $(filter -mprotected-mode -mdpmiable -melks%, \
-			    $(CC) $(MULTILIB))
-CMODEL_MEDIUM_P = $(filter -mcmodel=medium,$(CC) $(MULTILIB))
+			    $(CC) $(CFLAGS) $(MULTILIB))
+CMODEL_MEDIUM_P = $(filter -mcmodel=medium,$(CC) $(CFLAGS) $(MULTILIB))
+CMODEL_NOT_MEDIUM_P = $(if $(CMODEL_MEDIUM_P),,!)
 DOS_COMMON_OBJS += $(if $(PROTECTED_MODE_P), \
 			dpm-hosted.o dpm-r-dos.o dpm-r-func.o dpm-abort.o)
 
@@ -79,7 +80,7 @@ DOS_TINY_CRT0	= dos-t-c0.o
 
 DOS_SMALL_OBJS	= $(DOS_COMMON_OBJS)
 DOS_SMALL_OBJS	+= $(if $(PROTECTED_MODE_P),dpm-mscs.o dpm-msds.o, \
-			dos-msabort.o)
+			dos-msmmabort.o)
 DOS_SMALL_CFLAGS = $(DOS_TINY_CFLAGS)
 DOS_SMALL_ASFLAGS = $(DOS_TINY_ASFLAGS)
 DOS_SMALL_SCRIPTS = dos-exe-small.ld dos-ms.ld dos-mss.ld dos-msl.ld \
@@ -88,6 +89,7 @@ DOS_SMALL_BSP	= libdos-s.a
 DOS_SMALL_CRT0	= dos-s-c0.o
 
 DOS_MEDIUM_OBJS	= $(DOS_COMMON_OBJS)
+DOS_MEDIUM_OBJS	+= dos-msmmabort.o
 DOS_MEDIUM_CFLAGS = -mcmodel=medium $(DOS_TINY_CFLAGS)
 DOS_MEDIUM_ASFLAGS = -mcmodel=medium $(DOS_TINY_ASFLAGS)
 DOS_MEDIUM_SCRIPTS = dos-mm.ld dos-mms.ld dos-mml.ld dos-mmsl.ld
@@ -136,8 +138,8 @@ ALL_BSP		= $(ELKS_BSP) $(DOS_TINY_BSP) $(DOS_SMALL_BSP) \
 OBJS		= $(if $(CMODEL_MEDIUM_P), \
 		       $(DOS_MEDIUM_OBJS), \
 		       $(sort $(DOS_TINY_OBJS) $(DOS_SMALL_OBJS)))
-CFLAGS		= $(if $(CMODEL_MEDIUM_P), \
-		       $(DOS_MEDIUM_CFLAGS), $(DOS_SMALL_CFLAGS))
+CFLAGS_FOR_TARGET += $(if $(CMODEL_MEDIUM_P), \
+			  $(DOS_MEDIUM_CFLAGS), $(DOS_SMALL_CFLAGS))
 ASFLAGS		= $(if $(CMODEL_MEDIUM_P), \
 		       $(DOS_MEDIUM_ASFLAGS), $(DOS_SMALL_ASFLAGS))
 SCRIPTS		= $(if $(CMODEL_MEDIUM_P), \
@@ -160,9 +162,10 @@ INSTALL_FILES = \
   $(BSP) $(CRT0) $(NANO_STDIO_BSP) $(IPRINTF_BSP) $(ISCANF_BSP) \
   $(SCRIPTS) $(AUTOFLOAT_STDIO_SCRIPTS)
 INSTALL_FILES += $(if $(PROTECTED_MODE_P), \
-		      $(DPMIABLE_TINY_CRT0) $(DPMIABLE_SMALL_CRT0) \
-		      $(DPMIABLE_TINY_SCRIPTS) $(DPMIABLE_SMALL_SCRIPTS) \
-		      $(ELKS_BSP) $(ELKS_CRT0) $(ELKS_SCRIPTS))
+		      $(if $(CMODEL_NOT_MEDIUM_P), \
+			   $(DPMIABLE_TINY_CRT0) $(DPMIABLE_SMALL_CRT0) \
+			   $(DPMIABLE_TINY_SCRIPTS) $(DPMIABLE_SMALL_SCRIPTS) \
+			   $(ELKS_BSP) $(ELKS_CRT0) $(ELKS_SCRIPTS)))
 #
 # build a test program for each target board. Just trying to get
 # it to link is a good test, so we ignore all the errors for now.
@@ -225,7 +228,7 @@ test:
 #
 #
 NEWLIB_CFLAGS = `if [ -d ${objroot}/newlib ]; then echo -I${objroot}/newlib/targ-include -I${srcroot}/newlib/libc/include; fi`
-CFLAGS_FOR_TARGET = ${MULTILIB} ${INCLUDES} ${NEWLIB_CFLAGS}
+CFLAGS_FOR_TARGET += ${MULTILIB} ${INCLUDES} ${NEWLIB_CFLAGS}
 
 .c.o:
 	$(CC) $(CFLAGS_FOR_TARGET) -Os -c $(CFLAGS) -D_COMPILING_NEWLIB $<
@@ -414,17 +417,29 @@ dos-mtl.ld: dos-mt.ld.in
 dos-mtsl.ld dos-com.ld: dos-mt.ld.in
 	$(GEN_LD_SCRIPT) >$@
 
-dos-ms.ld: dos-ms.ld.in
+dos-ms.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -nostdlib >$@
 
-dos-mss.ld: dos-ms.ld.in
+dos-mss.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -nodefaultlibs >$@
 
-dos-msl.ld: dos-ms.ld.in
+dos-msl.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -nostartfiles >$@
 
-dos-mssl.ld dos-exe-small.ld: dos-ms.ld.in
+dos-mssl.ld dos-exe-small.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) >$@
+
+dos-mm.ld: dos-mx.ld.in
+	$(GEN_LD_SCRIPT) -mcmodel=medium -nostdlib >$@
+
+dos-mms.ld: dos-mx.ld.in
+	$(GEN_LD_SCRIPT) -mcmodel=medium -nodefaultlibs >$@
+
+dos-mml.ld: dos-mx.ld.in
+	$(GEN_LD_SCRIPT) -mcmodel=medium -nostartfiles >$@
+
+dos-mmsl.ld: dos-mx.ld.in
+	$(GEN_LD_SCRIPT) -mcmodel=medium >$@
 
 dpm-mt.ld: dos-mt.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable -nostdlib >$@
@@ -438,16 +453,16 @@ dpm-mtl.ld: dos-mt.ld.in
 dpm-mtsl.ld: dos-mt.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable >$@
 
-dpm-ms.ld: dos-ms.ld.in
+dpm-ms.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable -nostdlib >$@
 
-dpm-mss.ld: dos-ms.ld.in
+dpm-mss.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable -nodefaultlibs >$@
 
-dpm-msl.ld: dos-ms.ld.in
+dpm-msl.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable -nostartfiles >$@
 
-dpm-mssl.ld: dos-ms.ld.in
+dpm-mssl.ld: dos-mx.ld.in
 	$(GEN_LD_SCRIPT) -mdpmiable >$@
 
 elk-mt.ld: elk-mt.ld.in

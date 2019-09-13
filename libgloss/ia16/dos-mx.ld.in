@@ -6,7 +6,9 @@ cmd2='#'
 w1=with
 w2=with
 w3=without
-crt0=-l:dos-s-c0.o
+crt0='-l:dos-@cmodel@-c0.o'
+cm=s
+cml=small
 case "$1" in
   -nostdlib)
     cmd1='/^@if_starts@/,/^@endif@/ d'
@@ -20,16 +22,20 @@ case "$1" in
      cmd2='/^@if_libs@/,/^@endif@/ d'
      w2=without;;
   -mdpmiable)
-     crt0=-l:dpm-s-c0.o
+     crt0='-l:dpm-@cmodel@-c0.o'
      w3=with;;
+  -mcmodel=medium)
+     cm=m
+     cml=medium;;
 esac
 sed -e "$cmd1" -e "$cmd2" -e "s;@crt0@;$crt0;g" \
     -e "s;@withstarts@;$w1;g" -e "s;@withlibs@;$w2;g" \
     -e "s;@withdpmiable@;$w3;g" \
+    -e "s;@cmodel@;$cm;g" -e "s;@cmodel_long@;$cml;g" \
     -e "s/@self@/`basename "$0"`/g" -e "/^@if/ d" -e "/^@endif@/ d" <<'EOF'
-/* Linker script for DOS executables with separate data and text segments,
-   @withstarts@ startup files, @withlibs@ default libraries, and @withdpmiable@
-   DPMI support.
+/* Linker script for @cmodel_long@-model DOS executables, @withstarts@
+   startup files, @withlibs@ default libraries, and @withdpmiable@ DPMI
+   support.
 
    Partly derived from elks-separate.ld .  Generated from @self@.  */
 
@@ -39,7 +45,7 @@ ENTRY(_start)
 INPUT(-l:crtbegin.o -l:crtend.o @crt0@)
 @endif@
 @if_libs@
-GROUP(-lc -lgcc -ldos-exe-small -lm)
+GROUP(-lc -lgcc -ldos-@cmodel@ -lm)
 @endif@
 
 MEMORY
