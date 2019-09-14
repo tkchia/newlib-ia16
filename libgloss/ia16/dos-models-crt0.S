@@ -18,7 +18,7 @@
 
 #include "call-cvt.h"
 
-	.section .startupA
+	.section .startupA, "ax"
 	.global _start
 _start:
 	# Sanity check for DOS version >= 2.  (Note that this sanity check
@@ -212,7 +212,7 @@ _start:
 	.set	.Lpsp,	.Largv
 #endif
 
-	.section .startupB
+	.section .startupB, "ax"
 
 	# Find length of environment + progname
 #ifndef TINY
@@ -436,7 +436,7 @@ _exit:
 	xchgw	%ax,	%si
 #endif
 
-	.section .startupC
+	.section .startupC, "ax"
 
 #ifndef __IA16_CALLCVT_REGPARMCALL
 	popw	%bx
