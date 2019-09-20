@@ -24,7 +24,7 @@
  *
  * - TEXT_ (TAG) or DATA_ (TAG) switches to a text or data section.  Whether
  *   the section is near or far will depend on the memory model.  The section
- *   name may include a tag TAG.
+ *   name may include a tag TAG to indicate the module it belongs to.
  *
  * - JMP_ (FUNC) or CALL_ (FUNC) does a jump or a call to the function FUNC.
  *   Whether the jump or call is near or far will depend on the memory model.
@@ -112,7 +112,7 @@
 				ljmp $0, $func
 # define CALL_(func)		SEG_RELOC_ (.+3, func); \
 				lcall $0, $func
-# define TEXT_(tag)		.section AUX___(.fartext.##tag##$), "ax"
+# define TEXT_(tag)		.section AUX___(.fartext.f.##tag##$), "ax"
 # define TEXT_PTR_(func)	SEG_RELOC_ (.+2, func); \
 				.hword func, 0
 #endif
