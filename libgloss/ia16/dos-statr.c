@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <_syslist.h>
 #include <reent.h>
+#include "dbcs.h"
 #include "pmode.h"
 
 #ifndef FP_SEG
@@ -83,18 +84,25 @@ _stat_r (struct _reent *reent, const char * restrict path,
 {
   struct _find_t findbuf;
   unsigned char attr;
+  _dos_dbcs_lead_table_t dbcs = _dos_get_dbcs_lead_table ();
 
   /* Check that the PATH is not itself a wildcard.  (This does not handle
      Windows-style \\?\... UNC paths, but from what I know, DOS does not have
      these anyway.)  */
-  if (path[strcspn (path, "*?")] != 0)
+  size_t wild_pos = __msdos_dbcs_strcspn (path, '*', '?', dbcs);
+
+  if (path[wild_pos] != 0)
     {
       reent->_errno = ENOENT;
+      _dos_free_dbcs_lead_table (dbcs);
       return -1;
     }
 
   if (dos_findfirst (reent, path, &findbuf))
-    return -1;
+    {
+      _dos_free_dbcs_lead_table (dbcs);
+      return -1;
+    }
 
   /* zero any fields that don't really apply to DOS,
      or findfirst does not provide */
@@ -106,8 +114,12 @@ _stat_r (struct _reent *reent, const char * restrict path,
   buf->st_mtime = buf->st_atime = buf->st_ctime
     = __msdos_cvt_file_time (findbuf.date, findbuf.time);
   buf->st_size = findbuf.size;
-  buf->st_dev = path[1] == ':' ? toupper (path[0]) - 'A' : dos_getdrive ();
+  if (path[1] == ':' && ! __msdos_dbcs_lead_byte_p (path[0], dbcs))
+    buf->st_dev = toupper (path[0]) - 'A';
+  else
+    buf->st_dev = dos_getdrive ();
   buf->st_nlink = 1;
 
+  _dos_free_dbcs_lead_table (dbcs);
   return 0;
 }

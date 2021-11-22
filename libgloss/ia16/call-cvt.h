@@ -79,6 +79,10 @@
  *   into %ds; LES_ARG0W_BX_ (REG) moves the shortwords into REG and %es.
  *   Each of these macros should be used only after ENTER_BX_.
  *
+ * - LDS_ARG2W_BX_ (REG) moves the second shortword into REG, and the third
+ *   into %ds; LES_ARG2W_BX_ (REG) moves the shortwords into REG and %es.
+ *   Each of these macros should be used only after ENTER_BX_.
+ *
  * - LDS_ARG4W2_BX_ (REG) moves the third shortword into REG, and the fourth
  *   into %ds; LES_ARG4W2_BX_ (REG) moves the shortwords into REG and %es. 
  *   For the `regparmcall' convention, these macros assume that the function
@@ -198,6 +202,14 @@
 				.ifnc %ax, reg; \
 				movw %ax, reg; \
 				.endif
+# define LDS_ARG2W_BX_(reg)	movw %cx, %ds; \
+				.ifnc %dx, reg; \
+				movw %dx, reg; \
+				.endif
+# define LES_ARG2W_BX_(reg)	movw %cx, %es; \
+				.ifnc %dx, reg; \
+				movw %dx, reg; \
+				.endif
 # define LDS_ARG4W2_BX_(reg)	ldsw FAR_ADJ__+2(%bx), reg
 # define LES_ARG4W2_BX_(reg)	lesw FAR_ADJ__+2(%bx), reg
 # define RET_(n)		.if (n)>6; \
@@ -237,6 +249,8 @@
 # define MOV_ARG8B2_BX_(reg)	movb FAR_ADJ__+10(%bx), reg
 # define LDS_ARG0W_BX_(reg)	ldsw FAR_ADJ__+2(%bx), reg
 # define LES_ARG0W_BX_(reg)	lesw FAR_ADJ__+2(%bx), reg
+# define LDS_ARG2W_BX_(reg)	ldsw FAR_ADJ__+4(%bx), reg
+# define LES_ARG2W_BX_(reg)	lesw FAR_ADJ__+4(%bx), reg
 # define LDS_ARG4W2_BX_(reg)	ldsw FAR_ADJ__+6(%bx), reg
 # define LES_ARG4W2_BX_(reg)	lesw FAR_ADJ__+6(%bx), reg
 # ifdef __IA16_CALLCVT_STDCALL

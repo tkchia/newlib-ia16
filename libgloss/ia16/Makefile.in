@@ -58,13 +58,14 @@ ELKS_SCRIPTS	= elk-mt.ld elk-mts.ld elk-mtl.ld elk-mtsl.ld \
 ELKS_BSP	= libelks.a
 ELKS_CRT0	= elks-crt0.o
 
-DOS_COMMON_OBJS = dos-chdir.o dos-closer.o dos-cvt-file-time.o dos-dup.o \
-		  dos-dup2.o dos-fstatr.o dos-getcwd.o dos-getcwd-impl.o \
-		  dos-gettimeofdayr.o dos-heaplen.o dos-isattyr.o \
-		  dos-lseekr.o dos-mkdirr.o dos-openr.o dos-readr.o \
-		  dos-realpath.o dos-renamer.o dos-rmdir.o dos-sbrkr.o \
-		  dos-statr.o dos-timesr.o dos-uname.o dos-uname-impl.o \
-		  dos-unlinkr.o dos-usleep.o dos-writer.o
+DOS_COMMON_OBJS = dos-chdir.o dos-closer.o dos-cvt-file-time.o dos-dbcs.o \
+		  dos-dbcs-strcspn.o dos-dup.o dos-dup2.o dos-fstatr.o \
+		  dos-getcwd.o dos-getcwd-impl.o dos-gettimeofdayr.o \
+		  dos-heaplen.o dos-isattyr.o dos-lseekr.o dos-mkdirr.o \
+		  dos-openr.o dos-readr.o dos-realpath.o dos-renamer.o \
+		  dos-rmdir.o dos-sbrkr.o dos-statr.o dos-timesr.o \
+		  dos-uname.o dos-uname-impl.o dos-unlinkr.o dos-usleep.o \
+		  dos-writer.o
 PROTECTED_MODE_P = $(filter -mprotected-mode -mdpmiable -melks%, \
 			    $(CC) $(CFLAGS) $(MULTILIB))
 CMODEL_MEDIUM_P = $(filter -mcmodel=medium,$(CC) $(CFLAGS) $(MULTILIB))

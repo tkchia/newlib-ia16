@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "dbcs.h"
 #include "pmode.h"
 
 #ifndef FP_SEG
@@ -86,7 +87,7 @@ static const char *__msdos_parse_to_fcb (const char *name, struct fcb *fcb)
 }
 
 static bool
-__msdos_is_path_sep_p (char c)
+__msdos_path_sep_p (char c)
 {
   switch (c)
     {
@@ -134,6 +135,7 @@ realpath (const char *path, char *out_path)
    * each component begins (& ends).
    */
   size_t n_comps, comp_start[PATH_MAX / 2];
+  _dos_dbcs_lead_table_t dbcs = (_dos_dbcs_lead_table_t) 0L;
 
   if (! path || ! path[0])
     goto invalid;
@@ -157,8 +159,10 @@ realpath (const char *path, char *out_path)
       goto bail;
     }
 
+  dbcs = _dos_get_dbcs_lead_table ();
+
   /* Not a network path.  Process any drive letter. */
-  if (path[1] == ':')
+  if (path[1] == ':' && ! __msdos_dbcs_lead_byte_p (path[0], dbcs))
     {
       drive = path[0];
       switch (drive)
@@ -185,7 +189,7 @@ realpath (const char *path, char *out_path)
    */
   if (drive)
     {
-      if (__msdos_is_path_sep_p (path[i]))
+      if (__msdos_path_sep_p (path[i]))
 	{
 	  out_path[j++] = drive - 1 + 'A';
 	  out_path[j++] = ':';
@@ -197,17 +201,31 @@ realpath (const char *path, char *out_path)
       else if (__msdos_getcwd (out_path, drive))
 	{
 	  char *p = out_path;
-	  j = strlen (out_path);
-	  if (! __msdos_is_path_sep_p (out_path[j - 1]))
-	    out_path[j++] = '\\';
 	  n_comps = 0;
 	  while ((c = *p++) != 0)
 	    {
-	      if (__msdos_is_path_sep_p (c))
+	      if (__msdos_dbcs_lead_byte_p (c, dbcs))
+		{
+		  if (! *p++)
+		    break;
+		}
+	      else if (__msdos_path_sep_p (c))
 		{
 		  comp_start[n_comps] = p - out_path;
 		  ++n_comps;
 		}
+	    }
+	  /*
+	   * p now points after the null terminator from the obtained
+	   * current directory.  We add a trailing backslash if the last
+	   * (possibly multi-byte) character seen was not a path separator.
+	   */
+	  j = p - 1 - out_path;
+	  if (! n_comps || comp_start[n_comps - 1] != j)
+	    {
+	      out_path[j++] = '\\';
+	      comp_start[n_comps] = j;
+	      ++n_comps;
 	    }
 	}
       else
@@ -223,9 +241,9 @@ realpath (const char *path, char *out_path)
   while (path[i] != 0)
     {
       struct fcb fcb;
-      size_t name_len = 8, ext_len = 3;
+      size_t name_len, ext_len;
 
-      size_t k = strcspn (path + i, "\\/");
+      size_t k = __msdos_dbcs_strcspn (path + i, '\\', '/', dbcs), m;
       switch (k)
 	{
 	case 0:
@@ -269,11 +287,33 @@ realpath (const char *path, char *out_path)
 
       i += k;
 
-      while (name_len && fcb.name[name_len - 1] == ' ')
-	--name_len;
+      name_len = m = 0;
+      do
+	{
+	  c = (char) fcb.name[m];
+	  ++m;
+	  if (c != ' ')
+	    {
+	      if (m < 8 && __msdos_dbcs_lead_byte_p (c, dbcs))
+		++m;
+	      name_len = m;
+	    }
+	}
+      while (m < 8);
 
-      while (ext_len && fcb.ext[ext_len - 1] == ' ')
-	--ext_len;
+      ext_len = m = 0;
+      do
+	{
+	  c = (char) fcb.ext[m];
+	  ++m;
+	  if (c != ' ')
+	    {
+	      if (m < 3 && __msdos_dbcs_lead_byte_p (c, dbcs))
+		++m;
+	      ext_len = m;
+	    }
+	}
+      while (m < 3);
 
       if (! name_len)
 	goto invalid;
@@ -302,5 +342,6 @@ invalid:
 bail:
   if (out_path_alloced)
     free (out_path);
+  _dos_free_dbcs_lead_table (dbcs);
   return NULL;
 }
