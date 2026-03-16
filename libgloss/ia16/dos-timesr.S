@@ -216,12 +216,12 @@ _times_r:
 
 	.balign	2
 
-	.section .ctors.65535
+	.section .ctors.65534
 
 	.balign	2
 	TEXT_PTR_ (.Lctor_timesr)
 
-	.section .dtors.65535
+	.section .dtors.65534
 
 	.balign	2
 	TEXT_PTR_ (.Ldtor_timesr)
